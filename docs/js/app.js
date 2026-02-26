@@ -1,5 +1,6 @@
 // InfraScope — Static Map Dashboard Application
-// All data is generated client-side (no backend required).
+// Fetches real data from JMA APIs, falls back to mock data.
+// GSI hazard map tile overlays for flood/landslide risk areas.
 
 (function () {
   "use strict";
@@ -11,22 +12,33 @@
     zoomControl: true
   });
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "&copy; OpenStreetMap contributors",
+  L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", {
+    attribution: "<a href='https://maps.gsi.go.jp/development/ichiran.html'>国土地理院</a>",
     maxZoom: 18
   }).addTo(map);
 
-  // ---------- Layer groups ----------
+  // ---------- Data layer groups ----------
   var riverLayer = L.layerGroup().addTo(map);
   var roadLayer = L.layerGroup().addTo(map);
   var landslideLayer = L.layerGroup().addTo(map);
 
-  // ---------- Cached data for risk computation ----------
+  // ---------- GSI Hazard Map tile overlays ----------
+  var floodHazardLayer = L.tileLayer(
+    "https://disaportaldata.gsi.go.jp/raster/01_flood_l2_shinsuishin_data/{z}/{x}/{y}.png",
+    { opacity: 0.6, maxZoom: 17, attribution: "ハザードマップポータルサイト" }
+  );
+
+  var sedimentHazardLayer = L.tileLayer(
+    "https://disaportaldata.gsi.go.jp/raster/05_kyukeishakeikaikuiki/{z}/{x}/{y}.png",
+    { opacity: 0.6, maxZoom: 17, attribution: "ハザードマップポータルサイト" }
+  );
+
+  // ---------- Cached data ----------
   var cachedRivers = [];
   var cachedRoads = [];
   var cachedLandslides = [];
 
-  // ---------- Helper ----------
+  // ---------- Marker helper ----------
   function makeMarker(lat, lon, color, radius, popupHtml) {
     return L.circleMarker([lat, lon], {
       radius: radius,
@@ -58,7 +70,8 @@
         "水位: " + r.water_level_m + " m<br>" +
         "警戒水位: " + r.warning_level_m + " m<br>" +
         "危険水位: " + r.danger_level_m + " m<br>" +
-        "状態: <b>" + r.status + "</b>";
+        "状態: <b>" + r.status + "</b><br>" +
+        "<small>出典: " + (r.source === "jma" ? "気象庁" : "モック") + "</small>";
       makeMarker(r.lat, r.lon, RIVER_COLORS[r.status] || "#22c55e", 8, popup).addTo(riverLayer);
     });
   }
@@ -83,7 +96,8 @@
         "<b>" + ls.name + "</b><br>" +
         "都道府県: " + ls.prefecture + "<br>" +
         "リスクスコア: " + ls.risk_score + "<br>" +
-        "警戒レベル: <b>" + ls.warning_level + "</b>";
+        "警戒レベル: <b>" + ls.warning_level + "</b><br>" +
+        "<small>出典: " + (ls.source === "jma" ? "気象庁" : "モック") + "</small>";
       makeMarker(ls.lat, ls.lon, landslideColor(ls.warning_level), 9, popup).addTo(landslideLayer);
     });
   }
@@ -92,6 +106,19 @@
     var el = document.getElementById("summary-content");
     var result = InfraSummary.generate(rivers, roads, landslides);
     el.textContent = result.summary;
+  }
+
+  function renderSourceInfo() {
+    var sources = InfraData.getSources();
+    var el = document.getElementById("source-info");
+    if (!el) return;
+    var lines = [];
+    lines.push("河川/洪水: " + (sources.rivers === "jma" ? "気象庁 洪水警報API" : "モックデータ"));
+    lines.push("土砂災害: " + (sources.landslides === "jma" ? "気象庁 土砂災害API" : "モックデータ"));
+    lines.push("道路規制: モックデータ（公開API無し）");
+    lines.push("地図タイル: 国土地理院");
+    lines.push("ハザードマップ: 国土地理院ハザードマップポータル");
+    el.textContent = lines.join("\n");
   }
 
   // ---------- Risk on map click ----------
@@ -130,28 +157,32 @@
 
   // ---------- Layer toggles ----------
   document.getElementById("layer-rivers").addEventListener("change", function (e) {
-    if (e.target.checked) map.addLayer(riverLayer);
-    else map.removeLayer(riverLayer);
+    if (e.target.checked) map.addLayer(riverLayer); else map.removeLayer(riverLayer);
   });
   document.getElementById("layer-roads").addEventListener("change", function (e) {
-    if (e.target.checked) map.addLayer(roadLayer);
-    else map.removeLayer(roadLayer);
+    if (e.target.checked) map.addLayer(roadLayer); else map.removeLayer(roadLayer);
   });
   document.getElementById("layer-landslides").addEventListener("change", function (e) {
-    if (e.target.checked) map.addLayer(landslideLayer);
-    else map.removeLayer(landslideLayer);
+    if (e.target.checked) map.addLayer(landslideLayer); else map.removeLayer(landslideLayer);
+  });
+  document.getElementById("layer-flood-hazard").addEventListener("change", function (e) {
+    if (e.target.checked) map.addLayer(floodHazardLayer); else map.removeLayer(floodHazardLayer);
+  });
+  document.getElementById("layer-sediment-hazard").addEventListener("change", function (e) {
+    if (e.target.checked) map.addLayer(sedimentHazardLayer); else map.removeLayer(sedimentHazardLayer);
   });
 
   // ---------- Refresh ----------
-  function refreshAll() {
-    cachedRivers = InfraData.getRiverWaterLevels();
+  async function refreshAll() {
+    cachedRivers = await InfraData.getRiverWaterLevels();
     cachedRoads = InfraData.getRoadClosures();
-    cachedLandslides = InfraData.getLandslideWarnings();
+    cachedLandslides = await InfraData.getLandslideWarnings();
 
     renderRivers(cachedRivers);
     renderRoads(cachedRoads);
     renderLandslides(cachedLandslides);
     renderSummary(cachedRivers, cachedRoads, cachedLandslides);
+    renderSourceInfo();
 
     document.getElementById("last-updated").textContent =
       "最終更新: " + new Date().toLocaleTimeString("ja-JP");

@@ -1,8 +1,8 @@
 """LLM-based Situation Summary generator.
 
 In production this would call an LLM (e.g. Claude) via API.
-For the mock implementation we generate a structured natural-language summary
-from the current data snapshot.
+For the current implementation we generate a structured natural-language
+summary from the data snapshot (real or mock).
 """
 
 from __future__ import annotations
@@ -11,20 +11,17 @@ from datetime import datetime, timedelta, timezone
 
 from backend.app.mcp.data_provider import (
     get_landslide_warnings,
+    get_landslide_warnings_async,
     get_river_water_levels,
+    get_river_water_levels_async,
     get_road_closures,
 )
 
 JST = timezone(timedelta(hours=9))
 
 
-def generate_summary() -> dict:
-    """Generate an AI-style situation summary from the current data snapshot."""
-    rivers = get_river_water_levels()
-    roads = get_road_closures()
-    landslides = get_landslide_warnings()
-
-    # --- Build summary text ---
+def _build_summary(rivers: list, roads: list, landslides: list) -> dict:
+    """Build summary text from data — shared by sync and async."""
     lines: list[str] = []
     lines.append("【InfraScope 状況サマリー】")
     lines.append("")
@@ -40,6 +37,14 @@ def generate_summary() -> dict:
     for r in warning_rivers:
         lines.append(f"  - {r['name']}（{r['river']}）: 水位 {r['water_level_m']}m "
                      f"（警戒水位 {r['warning_level_m']}m） 警戒")
+    lines.append("")
+
+    # Data source indicator
+    source = rivers[0].get("source", "mock") if rivers else "mock"
+    if source == "jma":
+        lines.append("  ※ データソース: 気象庁 防災情報API（リアルタイム）")
+    else:
+        lines.append("  ※ データソース: モックデータ（デモ用）")
     lines.append("")
 
     # Roads
@@ -84,3 +89,20 @@ def generate_summary() -> dict:
             "landslide_high_risk_areas": len(high_ls),
         },
     }
+
+
+def generate_summary() -> dict:
+    """Synchronous summary using mock data."""
+    return _build_summary(
+        get_river_water_levels(),
+        get_road_closures(),
+        get_landslide_warnings(),
+    )
+
+
+async def generate_summary_async() -> dict:
+    """Async summary using real API data with fallback."""
+    rivers = await get_river_water_levels_async()
+    roads = get_road_closures()
+    landslides = await get_landslide_warnings_async()
+    return _build_summary(rivers, roads, landslides)

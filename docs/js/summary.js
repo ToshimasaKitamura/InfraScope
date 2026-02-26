@@ -23,6 +23,11 @@ var InfraSummary = (function () {
     });
     lines.push("");
 
+    // Data source
+    var riverSource = (rivers.length > 0 && rivers[0].source === "jma") ? "気象庁API" : "モックデータ";
+    lines.push("  ※ データソース: " + riverSource);
+    lines.push("");
+
     // Roads
     var closed = roads.filter(function (rd) { return rd.status === "closed"; });
     var restricted = roads.filter(function (rd) { return rd.status === "restricted"; });

@@ -16,6 +16,7 @@ class RiverWaterLevel(BaseModel):
     danger_level_m: float
     status: str  # normal | warning | danger
     observed_at: str
+    source: str = "mock"
 
 
 class RoadClosure(BaseModel):
@@ -39,6 +40,16 @@ class LandslideWarning(BaseModel):
     risk_score: float
     warning_level: str  # low | moderate | high | very_high
     observed_at: str
+    source: str = "mock"
+
+
+class JmaWarning(BaseModel):
+    area_code: str
+    area_name: str
+    lat: float
+    lon: float
+    warning_type: str
+    status: str
 
 
 class RiskScore(BaseModel):

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfraScope — 災害・インフラ可視化ダッシュボード</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <h1 class="logo">InfraScope</h1>
+            <span class="tagline">災害・インフラ可視化ダッシュボード</span>
+        </div>
+        <div class="header-right">
+            <button id="btn-refresh" class="btn btn-primary">データ更新</button>
+            <span id="last-updated" class="last-updated"></span>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="panel" id="panel-summary">
+                <h2 class="panel-title">状況サマリー</h2>
+                <div id="summary-content" class="summary-content">読み込み中...</div>
+            </div>
+
+            <div class="panel" id="panel-risk">
+                <h2 class="panel-title">地点リスクスコア</h2>
+                <p class="panel-description">地図上をクリックしてリスクを確認</p>
+                <div id="risk-result" class="risk-result hidden">
+                    <div class="risk-badge" id="risk-badge">-</div>
+                    <div class="risk-details" id="risk-details"></div>
+                </div>
+            </div>
+
+            <div class="panel" id="panel-legend">
+                <h2 class="panel-title">凡例</h2>
+                <div class="legend">
+                    <div class="legend-item">
+                        <span class="legend-dot dot-river-normal"></span> 河川 正常
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot dot-river-warning"></span> 河川 警戒
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot dot-river-danger"></span> 河川 危険
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot dot-road-closed"></span> 道路 通行止め
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot dot-road-restricted"></span> 道路 通行規制
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot dot-landslide-high"></span> 土砂災害 高リスク
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot dot-landslide-mod"></span> 土砂災害 中リスク
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layer toggles -->
+            <div class="panel" id="panel-layers">
+                <h2 class="panel-title">レイヤー</h2>
+                <label class="layer-toggle">
+                    <input type="checkbox" id="layer-rivers" checked /> 河川水位
+                </label>
+                <label class="layer-toggle">
+                    <input type="checkbox" id="layer-roads" checked /> 道路規制
+                </label>
+                <label class="layer-toggle">
+                    <input type="checkbox" id="layer-landslides" checked /> 土砂災害
+                </label>
+            </div>
+        </aside>
+
+        <!-- Map -->
+        <div id="map" class="map-container"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/risk.js"></script>
+    <script src="js/summary.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

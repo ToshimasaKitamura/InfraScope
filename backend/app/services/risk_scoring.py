@@ -6,7 +6,9 @@ import math
 
 from backend.app.mcp.data_provider import (
     get_landslide_warnings,
+    get_landslide_warnings_async,
     get_river_water_levels,
+    get_river_water_levels_async,
     get_road_closures,
 )
 
@@ -32,12 +34,8 @@ def _proximity_weight(distance_km: float) -> float:
     return 1.0 - (distance_km / PROXIMITY_THRESHOLD_KM)
 
 
-def compute_risk(lat: float, lon: float) -> dict:
-    """Compute an aggregated risk score for a given location."""
-    rivers = get_river_water_levels()
-    roads = get_road_closures()
-    landslides = get_landslide_warnings()
-
+def _score_from_data(lat: float, lon: float, rivers: list, roads: list, landslides: list) -> dict:
+    """Core risk computation logic shared by sync and async paths."""
     # --- River risk ---
     river_risk = 0.0
     river_factors: list[str] = []
@@ -107,3 +105,21 @@ def compute_risk(lat: float, lon: float) -> dict:
         "level": level,
         "contributing_factors": river_factors + road_factors + landslide_factors,
     }
+
+
+def compute_risk(lat: float, lon: float) -> dict:
+    """Compute risk using synchronous (mock) data."""
+    return _score_from_data(
+        lat, lon,
+        get_river_water_levels(),
+        get_road_closures(),
+        get_landslide_warnings(),
+    )
+
+
+async def compute_risk_async(lat: float, lon: float) -> dict:
+    """Compute risk using async data (real API with fallback)."""
+    rivers = await get_river_water_levels_async()
+    roads = get_road_closures()
+    landslides = await get_landslide_warnings_async()
+    return _score_from_data(lat, lon, rivers, roads, landslides)

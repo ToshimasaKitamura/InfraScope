@@ -56,3 +56,26 @@ def test_api_summary():
     data = resp.json()
     assert "summary" in data
     assert "generated_at" in data
+
+
+def test_api_warnings():
+    resp = client.get("/api/warnings")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert isinstance(data, list)
+
+
+def test_api_rivers_has_source_field():
+    resp = client.get("/api/rivers")
+    data = resp.json()
+    for item in data:
+        assert "source" in item
+        assert item["source"] in ("mock", "jma")
+
+
+def test_api_landslides_has_source_field():
+    resp = client.get("/api/landslides")
+    data = resp.json()
+    for item in data:
+        assert "source" in item
+        assert item["source"] in ("mock", "jma")

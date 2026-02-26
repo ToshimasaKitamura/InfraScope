@@ -1,0 +1,213 @@
+/* ===== Reset & Base ===== */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --color-bg: #0f1923;
+    --color-surface: #1a2732;
+    --color-surface-hover: #243442;
+    --color-border: #2a3a4a;
+    --color-text: #e0e6ed;
+    --color-text-muted: #8899aa;
+    --color-primary: #3b82f6;
+    --color-danger: #ef4444;
+    --color-warning: #f59e0b;
+    --color-success: #22c55e;
+    --color-info: #06b6d4;
+    --font-sans: "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "JetBrains Mono", "Fira Code", monospace;
+}
+
+body {
+    font-family: var(--font-sans);
+    background: var(--color-bg);
+    color: var(--color-text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== Header ===== */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1.25rem;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    z-index: 100;
+}
+
+.header-left {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+}
+
+.logo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    letter-spacing: 0.04em;
+}
+
+.tagline {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.last-updated {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+}
+
+/* ===== Buttons ===== */
+.btn {
+    padding: 0.35rem 0.85rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+/* ===== Main Layout ===== */
+.main-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+    width: 340px;
+    min-width: 340px;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+    overflow-y: auto;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.panel {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 0.75rem;
+}
+
+.panel-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--color-info);
+}
+
+.panel-description {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+/* ===== Summary Panel ===== */
+.summary-content {
+    font-size: 0.75rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    font-family: var(--font-mono);
+    color: var(--color-text-muted);
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+/* ===== Risk Panel ===== */
+.risk-result.hidden {
+    display: none;
+}
+
+.risk-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.risk-badge.low       { background: var(--color-success); color: #000; }
+.risk-badge.moderate   { background: var(--color-warning); color: #000; }
+.risk-badge.high       { background: #f97316; color: #000; }
+.risk-badge.critical   { background: var(--color-danger); color: #fff; }
+
+.risk-details {
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+}
+
+/* ===== Legend ===== */
+.legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.legend-item {
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.dot-river-normal    { background: var(--color-success); }
+.dot-river-warning   { background: var(--color-warning); }
+.dot-river-danger    { background: var(--color-danger); }
+.dot-road-closed     { background: #dc2626; }
+.dot-road-restricted { background: #fb923c; }
+.dot-landslide-high  { background: #a855f7; }
+.dot-landslide-mod   { background: #c084fc; }
+
+/* ===== Layer Toggles ===== */
+.layer-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 0.15rem 0;
+}
+
+/* ===== Map ===== */
+.map-container {
+    flex: 1;
+    z-index: 1;
+}
